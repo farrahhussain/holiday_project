@@ -1,0 +1,214 @@
+# !pip install Flask
+from flask import Flask, render_template_string, request, jsonify
+import requests
+from urllib.parse import quote
+import pandas as pd
+
+app = Flask(__name__)
+
+# Google geocoding API key
+api_key = 'AIzaSyBVdWflcBAG-j9OMlGCVlo6EZh0V1UTtxs'
+
+# Base URL for the Geocoding API
+base_url = 'https://maps.googleapis.com/maps/api/geocode/json'
+
+# Function to retrieve latitude and longitude for an address
+def get_geocode(address):
+    encoded_address = quote(address)
+    url = f'{base_url}?address={encoded_address}&key={api_key}'
+    response = requests.get(url)
+    data = response.json()
+    if data['status'] == 'OK':
+        latitude = data['results'][0]['geometry']['location']['lat']
+        longitude = data['results'][0]['geometry']['location']['lng']
+        return latitude, longitude
+    else:
+        return None, None
+
+# Define locations for different moods
+adventure_locations = [
+    'Victoria Lines, Malta',
+    'Mġarr Hills, Malta',
+    'Falcon Archery, Malta',
+    'Ta’ Cenc Clifftop walk, Gozo',
+    'Golden Bay Horse Riding, Malta',
+    'Badger Raceway, Malta',
+    'Malta Sailing Experiences, Malta',
+    'Gozo Ferry Port, Malta',
+    'Ghanj Thuffiha, Malta',
+    'L-Aħrax, Malta'
+]
+
+cultural_locations = [
+    'St. John’s Cathedral, Malta',
+    'Hal Saflieni Hypogeum, Malta',
+    'Palazzo Parisio, Malta',
+    'National Museum of Archaeology, Malta',
+    'Palazzo Parisio Gardens, Malta',
+    'San Anton Gardens, Malta',
+    'Ggantija Temple, Gozo',
+    'Mosta Dome, Malta',
+    'Upper Barrakka Gardens, Malta',
+    'Casa Bernard, Malta'
+]
+
+party_locations = [
+    'Level 22, Malta',
+    'Havana, Malta',
+    'Shadow Lounge, Malta',
+    'Marrakech, Malta',
+    'Uno, Malta',
+    'BarCelona Lounge, Malta',
+    'Plush, Malta',
+    'Sky Club, Malta',
+    'Alex Bar, Malta',
+    'Hugo’s Lounge, Malta'
+]
+
+relaxed_locations = [
+    'Ramla Beach, Gozo',
+    'Comino Beach/Blue Lagoon, Comino',
+    'Għajn Tuffieħa Bay, Malta',
+    'Mellieħa Bay, Malta',
+    'Mgarr Ix-Xini, Gozo',
+    'Le Spa, Malta',
+    'The Quintessence Spa, Gozo',
+    'Spa Sante, Malta',
+    'Athenaeum Spa, Malta',
+    'Myoka Sands, Malta'
+]
+
+mood_locations = {
+    'Adventurous': adventure_locations,
+    'Cultural': cultural_locations,
+    'Party': party_locations,
+    'Relaxed': relaxed_locations
+}
+
+results = []
+
+for mood, locations in mood_locations.items():
+    for address in locations:
+        latitude, longitude = get_geocode(address)
+        results.append({
+            'Name': address.split(',')[0],
+            'Latitude': latitude,
+            'Longitude': longitude,
+            'Mood': mood
+        })
+
+df = pd.DataFrame(results)
+
+@app.route('/')
+def home():
+    title = "Bespoke Breaks"
+    subtitle = "...where every escape is a Maltese masterpiece."
+    
+    add_markers = ""
+    for index, row in df.iterrows():
+        icon_url = {
+            'Adventurous': 'http://maps.google.com/mapfiles/ms/icons/red-dot.png',
+            'Cultural': 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png',
+            'Party': 'http://maps.google.com/mapfiles/ms/icons/yellow-dot.png',
+            'Relaxed': 'http://maps.google.com/mapfiles/ms/icons/green-dot.png'
+        }[row['Mood']]
+        add_markers += f"""
+            addMarker({row['Latitude']}, {row['Longitude']}, '{row['Name']}', '{icon_url}', '{row['Mood']}');
+        """
+    
+    html_content = f"""
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{title}</title>
+        <style>
+            body {{
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                font-family: Arial, sans-serif;
+            }}
+            #map {{
+                height: 400px;
+                width: 400px;
+                margin-top: 20px;
+            }}
+            .container {{
+                text-align: center;
+            }}
+            .dropdown-container {{
+                margin-top: 20px;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>{title}</h1>
+            <p>{subtitle}</p>
+        </div>
+        <div class="dropdown-container">
+            <select id="moodDropdown" onchange="filterMarkers()">
+                <option value="">All</option>
+                <option value="Adventurous">Adventurous</option>
+                <option value="Cultural">Cultural</option>
+                <option value="Party">Party</option>
+                <option value="Relaxed">Relaxed</option>
+            </select>
+        </div>
+        <div id="map"></div>
+        <script>
+            var markers = [];
+            var infoWindows = [];
+            var map;
+
+            function initMap() {{
+                var malta = {{lat: 35.9375, lng: 14.3754}};
+                map = new google.maps.Map(document.getElementById('map'), {{zoom: 10, center: malta}});
+                
+                {add_markers}
+                
+                window.filterMarkers = filterMarkers;
+            }}
+            
+            function addMarker(lat, lng, name, icon, mood) {{
+                var marker = new google.maps.Marker({{
+                    position: {{lat: lat, lng: lng}},
+                    map: map,
+                    title: mood,
+                    icon: icon
+                }});
+                markers.push(marker);
+                var infoWindow = new google.maps.InfoWindow({{
+                    content: '<div style="text-align: center;">' + name + '</div>'
+                }});
+                infoWindows.push(infoWindow);
+                marker.addListener('click', function() {{
+                    infoWindows.forEach(function(iw) {{ iw.close(); }});
+                    infoWindow.open(map, marker);
+                }});
+            }}
+            
+            function filterMarkers() {{
+                var selectedMood = document.getElementById('moodDropdown').value;
+                markers.forEach(function(marker) {{
+                    if (selectedMood === "" || marker.title === selectedMood) {{
+                        marker.setMap(map);
+                    }} else {{
+                        marker.setMap(null);
+                    }}
+                }});
+            }}
+        </script>
+        <script src="https://maps.googleapis.com/maps/api/js?key={api_key}&callback=initMap" async defer></script>
+    </body>
+    </html>
+    """
+    
+    return html_content
+
+# Run the app
+if __name__ == '__main__':
+    app.run(debug=True, use_reloader=False)
