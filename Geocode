@@ -1,0 +1,41 @@
+## ADVENTURE
+# URL of the webpage to scrape
+url = 'https://www.skyscanner.net/news/adventures-in-malta'
+
+# Initialize the Selenium WebDriver (this example uses Chrome)
+driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()))
+
+# Fetch the webpage
+driver.get(url)
+
+# Wait for the page to load completely (adjust the sleep time if necessary)
+time.sleep(5)  # This wait time might need adjustment
+
+# Get the page source after JavaScript has rendered the content
+web_content = driver.page_source
+
+# Close the driver
+driver.quit()
+
+# Parse the HTML content using BeautifulSoup
+soup = BeautifulSoup(web_content, 'html.parser')
+
+# Find activities
+headers = soup.find_all('h2', class_='wp-block-heading')
+
+# Find descriptions
+descriptions = soup.find_all('p')
+
+
+# Extract the text from these headers and store them in a list
+header_texts = [header.get_text() for header in headers]
+activities10 = header_texts[:10]
+
+description_texts = [description.get_text() for description in descriptions]
+descriptions10 = description_texts[3:13]
+
+
+# Print the list of header texts
+
+print(activities10)
+print(descriptions10)
