@@ -1,3 +1,6 @@
+## Webscraping website code
+## output of this code is list of activities and their descriptions
+
 ## ADVENTURE
 # URL of the webpage to scrape
 url = 'https://www.skyscanner.net/news/adventures-in-malta'
