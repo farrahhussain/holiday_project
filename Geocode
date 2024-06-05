@@ -60,6 +60,37 @@ description_texts = [description.get_text() for description in descriptions]
 descriptions10 = description_texts[3:13]
 
 
+## Cultural website webscraping
+
+# URL of the webpage to scrape
+url = 'https://www.malta.com/en/attraction/culture/top-10-cultural-sites-in-malta-and-gozo'
+
+# Initialize the Selenium WebDriver (this example uses Chrome)
+driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()))
+
+# Fetch the webpage
+driver.get(url)
+
+# Wait for the page to load completely (adjust the sleep time if necessary)
+time.sleep(5)  # This wait time might need adjustment
+
+# Get the page source after JavaScript has rendered the content
+web_content = driver.page_source
+
+# Close the driver
+driver.quit()
+
+# Parse the HTML content using BeautifulSoup
+soup = BeautifulSoup(web_content, 'html.parser')
+
+# Find the activity headers on the website
+headers = soup.find_all('div', class_='title_arrow_div')
+
+cultural_sites = [header.get_text() for header in headers]
+
+print(cultural_sites)
+
+
 # Print the list of header texts
 
 print(activities10)
