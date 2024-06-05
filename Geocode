@@ -1,5 +1,5 @@
 ## install packages
-!pip install webdriver_manager
+#!pip install webdriver_manager
 
 ## Import these
 import requests
@@ -53,7 +53,8 @@ def web_scraper_headers(url, index, class_):
     return header_texts
 
 # Another function to scrape website descriptions for information
-def web_scraper_headers(url, index, class_):
+# for sites where class does not need to defined
+def scrape2(url, index):
     # Initialize the Selenium WebDriver (this example uses Chrome)
     driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()))
 
@@ -73,7 +74,7 @@ def web_scraper_headers(url, index, class_):
     soup = BeautifulSoup(web_content, 'html.parser')
 
     # Find headers
-    headers = soup.find_all(index, class_)
+    headers = soup.find_all(index)
 
 
     # Extract the text from these headers and store them in a list
@@ -116,11 +117,23 @@ spa = spa[:5]
 
 relaxing = beaches + spa
 
+# ADVENTURE 
+activities
+
+# CULTURE
+# commented out #cultural_sites = web_scraper_headers(url, index, class_)
+
+# RELAX
+# commented out relaxing = beaches + spa
+
+
+# IDEA = you could put the three categories above into ONE for loop with the web scrape function
+
 ## Nightlife
 url = 'https://traveltriangle.com/blog/malta-nightlife/'
 index = 'h3'
 
-nightlife_descriptions = web_scraper_descriptions(url, index)
+nightlife_descriptions = scrape2(url, index)
 
 # Cleaning the list
 nightlife_descriptions.pop(1)
@@ -130,16 +143,7 @@ party = []
 for place in nightlife_descriptions:
     party.append(place[3:])
 
+# PRINT THE LISTS TO IMPORT INTO GOOGLE GEO API
+activities, relaxing, cultural_sites, party
 
-### THE LISTS YOU NEED TO IMPORT INTO GOOGLE GEO API
-# ADVENTURE 
-activities
-
-# CULTURE
-cultural_sites = web_scraper_headers(url, index, class_)
-
-# RELAX
-relaxing = beaches + spa
-
-# PARTY
-party
+# will need to explain within code how we use activities and found locations to search up
