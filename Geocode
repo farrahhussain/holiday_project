@@ -1,3 +1,22 @@
+## Import these
+import requests
+import pandas as pd
+from config import api_key, gkey, weather_key
+from pprint import pprint
+import json
+#from citipy import citipy
+'''
+##Optional
+import gmaps
+gmaps.configure(api_key= gkey)
+'''
+from bs4 import BeautifulSoup
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service as ChromeService
+from webdriver_manager.chrome import ChromeDriverManager
+import time
+
+
 ## Webscraping website code
 ## output of this code is list of activities and their descriptions
 
