@@ -1,3 +1,6 @@
+## install packages
+!pip install webdriver_manager
+
 ## Import these
 import requests
 import pandas as pd
