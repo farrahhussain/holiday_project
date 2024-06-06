@@ -147,3 +147,25 @@ for place in nightlife_descriptions:
 activities, relaxing, cultural_sites, party
 
 # will need to explain within code how we use activities and found locations to search up
+
+
+## Weather API 
+# meteo weather
+api_call = 'https://api.open-meteo.com/v1/forecast?latitude=35.917973&longitude=14.409942&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max'
+
+response = requests.get(api_call)
+data = response.json()
+
+data['daily']
+
+weather = {
+    '6th June' : [27.5, 20.9, 26],
+    '7th June' : [26.6, 19.7, 0],
+    '8th June' : [27.8, 19.0, 0],
+    '9th June' : [31.2, 19.3, 0], 
+    '10th June' : [29.3, 23.7, 0],
+    '11th June' : [29.3, 22.8, 0],
+    '12th June' : [27.8, 23.0, 0]    
+}
+
+weather_df = pd.DataFrame(weather, index=['Max Temperature', 'Min Temperature', 'Chance of Rain'])
