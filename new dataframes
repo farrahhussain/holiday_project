@@ -12,3 +12,37 @@ dates = ['6-9th June', '9th June', '14-23rd June', '19th June', '29th June']
 june_events = dict(zip(remaining_events, dates))
 
 june_events = pd.DataFrame(list(june_events.items()), columns=['Event', 'Date'])
+
+
+# Average Malta temperature bar chart
+# Data
+xlabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+yvalues = [13, 13, 14, 16, 20, 23, 27, 27, 25, 21, 17, 14]
+
+# Normalize y-values
+norm = Normalize(vmin=min(yvalues), vmax=max(yvalues))
+
+# Create colormap
+cmap = cm.get_cmap('YlOrRd')
+
+# Map colors to y-values
+colors = [cmap(norm(value)) for value in yvalues]
+
+# Create the plot
+plt.figure(figsize=(10, 6))
+sns.barplot(x=xlabels, y=yvalues, palette=colors)
+
+# Add y-ticks
+for index, value in enumerate(yvalues):
+    plt.text(index, value + 0.5, str(value), ha='center', va='bottom')
+
+# Add title and labels
+plt.title('Average Temperature in Malta by Month')
+plt.xlabel('Month')
+plt.ylabel('Temperature (°C)')
+
+# Adjust y-axis limit
+plt.ylim(0, max(yvalues) + 5)
+
+# Show plot
+plt.show()
