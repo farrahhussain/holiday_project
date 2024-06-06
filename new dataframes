@@ -1,1 +1,14 @@
+## Events by month
+url = 'https://www.maltauncovered.com/things-to-do/malta-events/'
+index = 'h3'
+class_ = 'elementor-heading-title elementor-size-default'
 
+events = web_scraper_headers(url, index, class_)
+
+remaining_events = events[12:17]
+
+dates = ['6-9th June', '9th June', '14-23rd June', '19th June', '29th June']
+
+june_events = dict(zip(remaining_events, dates))
+
+june_events = pd.DataFrame(list(june_events.items()), columns=['Event', 'Date'])
