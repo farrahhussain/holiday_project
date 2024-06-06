@@ -1,0 +1,164 @@
+# !pip install Flask
+from flask import Flask, render_template_string, request, jsonify
+import requests
+from urllib.parse import quote
+import pandas as pd
+
+
+
+# Construct the weather DataFrame
+weather = {
+    'Dates': ['6th June', '7th June', '8th June', '9th June', '10th June', '11th June', '12th June'],
+    'Max Temperature': [27.5, 26.6, 27.8, 31.2, 29.3, 29.3, 27.8],
+    'Min Temperature': [20.9, 19.7, 19.0, 19.3, 23.7, 22.8, 23.0],
+    'Chance of Rain': [26, 0, 0, 0, 0, 0, 0]
+}
+weather_df = pd.DataFrame(weather)
+
+
+
+@app.route('/')
+def home():
+    title = "Bespoke Breaks"
+    subtitle = "...where every escape is a Maltese masterpiece."
+    
+    add_markers = ""
+    for index, row in df.iterrows():
+        icon_url = {
+            'Adventurous': 'http://maps.google.com/mapfiles/ms/icons/red-dot.png',
+            'Cultural': 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png',
+            'Party': 'http://maps.google.com/mapfiles/ms/icons/yellow-dot.png',
+            'Relaxed': 'http://maps.google.com/mapfiles/ms/icons/green-dot.png'
+        }[row['Mood']]
+        add_markers += f"""
+            addMarker({row['Latitude']}, {row['Longitude']}, '{row['Name']}', '{icon_url}', '{row['Mood']}');
+        """
+    
+    html_content = f"""
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{title}</title>
+        <style>
+            body {{
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                font-family: Arial, sans-serif;
+            }}
+            #map {{
+                height: 400px;
+                width: 400px;
+                margin-top: 20px;
+            }}
+            .container {{
+                text-align: center;
+            }}
+            .dropdown-container {{
+                margin-top: 20px;
+            }}
+            table {{
+                margin-top: 20px;
+                border-collapse: collapse;
+                width: 100%;
+            }}
+            th, td {{
+                border: 1px solid black;
+                padding: 8px;
+                text-align: center;
+            }}
+            th {{
+                background-color: #f2f2f2;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>{title}</h1>
+            <p>{subtitle}</p>
+        </div>
+        <div class="dropdown-container">
+            <select id="moodDropdown" onchange="filterMarkers()">
+                <option value="">All</option>
+                <option value="Adventurous">Adventurous</option>
+                <option value="Cultural">Cultural</option>
+                <option value="Party">Party</option>
+                <option value="Relaxed">Relaxed</option>
+            </select>
+        </div>
+        <div id="map"></div>
+        <div>
+            <h2>Weather Forecast</h2>
+            <table border="1">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Max Temperature (°C)</th>
+                        <th>Min Temperature (°C)</th>
+                        <th>Chance of Rain (%)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{% for index, row in weather_df.iterrows() %}}
+                        <tr>
+                            <td>{{{{ row['Dates'] }}}}</td>
+                            <td>{{{{ row['Max Temperature'] }}}}</td>
+                            <td>{{{{ row['Min Temperature'] }}}}</td>
+                            <td>{{{{ row['Chance of Rain'] }}}}</td>
+                        </tr>
+                    {{% endfor %}}
+                </tbody>
+            </table>
+        </div>
+        <script>
+            var markers = [];
+            var infoWindows = [];
+            var map;
+
+            function initMap() {{
+                var malta = {{lat: 35.9375, lng: 14.3754}};
+                map = new google.maps.Map(document.getElementById('map'), {{zoom: 10, center: malta}});
+                
+                {add_markers}
+                
+                window.filterMarkers = filterMarkers;
+            }}
+            
+            function addMarker(lat, lng, name, icon, mood) {{
+                var marker = new google.maps.Marker({{
+                    position: {{lat: lat, lng: lng}},
+                    map: map,
+                    title: mood,
+                    icon: icon
+                }});
+                markers.push(marker);
+                var infoWindow = new google.maps.InfoWindow({{
+                    content: '<div style="text-align: center;">' + name + '</div>'
+                }});
+                infoWindows.push(infoWindow);
+                marker.addListener('click', function() {{
+                    infoWindows.forEach(function(iw) {{ iw.close(); }});
+                    infoWindow.open(map, marker);
+                }});
+            }}
+            
+            function filterMarkers() {{
+                var selectedMood = document.getElementById('moodDropdown').value;
+                markers.forEach(function(marker) {{
+                    if (selectedMood === "" || marker.title === selectedMood) {{
+                        marker.setMap(map);
+                    }} else {{
+                        marker.setMap(null);
+                    }}
+                }});
+            }}
+        </script>
+        <script src="https://maps.googleapis.com/maps/api/js?key={api_key}&callback=initMap" async defer></script>
+    </body>
+    </html>
+    """
+    
+    return render_template_string(html_content, weather_df=weather_df)
